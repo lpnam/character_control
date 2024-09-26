@@ -8,7 +8,7 @@ import { Physics } from '@react-three/cannon'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Canvas shadows>
-      <Physics gravity={[0, -9.81, 0]}>
+      <Physics gravity={[0, -9.81, 0]} broadphase='SAP'>
         <App />
       </Physics>
     </Canvas>
