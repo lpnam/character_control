@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
 import { Environment, PerspectiveCamera, OrbitControls } from '@react-three/drei'
@@ -9,6 +9,7 @@ import { Vector3, Quaternion } from 'three';
 function App() {
   const [thirdperson, setThirdPerson] = useState(false);
   const [cameraPosition, setCameraPosition] = useState([-6, 10, 12]);
+  const orbitcontrol = useRef(null);
 
   // For test
   const dir = new Vector3(1,1,0);
@@ -56,8 +57,8 @@ function App() {
       
       <directionalLight intensity={0.5} position={[3,3,1]} castShadow/>
       <ambientLight />
-      <OrbitControls enableDamping/>
-      <Character thirdPersonControl={thirdperson}/>
+      <OrbitControls enableDamping ref={orbitcontrol}/>
+      <Character thirdPersonControl={thirdperson} orbitControl={orbitcontrol}/>
       <arrowHelper args={[dir, start_point, length, "red"]} />
       <arrowHelper args={[default_vector, start_point, length, "blue"]} />
       <gridHelper args={[25]}/>

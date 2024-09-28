@@ -78,29 +78,16 @@ export function Character(props){
             window.removeEventListener('keyup',KeyUpCheck);
         }
     }, []);
-
+// ### 3rd Camera version 2
     useFrame((state, delta) => {
-
+        if(!props.thirdPersonControl) return;
         const t = 1.0 - Math.pow(0.001, delta);
-        const runVelocity = 5;
+        let velocity = 0;
         const walkVelocity = 2;
-        let velocity;
-
-        const rotateVector = new Vector3(0,1,0);
-        rotateVector.normalize();
-
-        // rotateVector.applyMatrix4(characterBody.current.matrixWorld).normalize();
-
-        const position = new Vector3();
-        position.setFromMatrixPosition(characterBody.current.matrixWorld);
-
-        const quaternion = new Quaternion(0,0,0,0);
-        // quaternion.setFromRotationMatrix(characterBody.current.matrixWorld);
-        quaternion.setFromAxisAngle(rotateVector, anglex);        
-
-        const wDir = new Vector3(0,0,-1); // Set direction base on current position of character (object)
-        wDir.applyQuaternion(quaternion);
-        wDir.normalize();
+        const runVelocity = 5;
+        let angleYCameraDirection = Math.atan2(
+            (state.camera.position.x - scene.position.x), 
+            (state.camera.position.z - scene.position.z));
 
         switch (index) {
             case 3:
@@ -114,18 +101,87 @@ export function Character(props){
                 break;
         }
 
-        // scene.getWorldDirection(wDir);
-        // wDir.y = 0;
-
+        const rotateAngle = new Vector3(0,1,0);
+        rotateAngle.normalize();
         
-        // Update the camera's target for the next frame
-        // characterBody.current.quaternion.rotateTowards(quaternion, 0.2)
-        scene.quaternion.slerp(quaternion, t);
-        scene.position.x += wDir.x * velocity * delta;
-        scene.position.z += wDir.z * velocity * delta;
-        // scene.setRotationFromQuaternion(quaternion);
-    });
+        const rotateQuarternion = new Quaternion(0,0,0,0);
+        rotateQuarternion.setFromAxisAngle(rotateAngle, angleYCameraDirection + anglex);
+        scene.quaternion.rotateTowards(rotateQuarternion, 0.2);
 
+        const wDir = new Vector3(); // Set direction base on current position of character (object)
+        state.camera.getWorldDirection(wDir);
+        wDir.y = 0;
+        wDir.normalize();
+        wDir.applyAxisAngle(rotateAngle, anglex);
+
+        let dirMoveX = wDir.x * velocity * delta;
+        let dirMoveZ = wDir.z * velocity * delta;
+
+        scene.position.x += dirMoveX;
+        scene.position.z += dirMoveZ;
+
+        let cameraTarget = new Vector3();
+
+        // move camera
+        state.camera.position.x += dirMoveX;
+        state.camera.position.z += dirMoveZ;
+        // update camera target
+        cameraTarget.x = scene.position.x;
+        cameraTarget.y = scene.position.y + 1;
+        cameraTarget.z = scene.position.z;
+
+        props.orbitControl.current.target = cameraTarget;
+    });
+    
+    // ### Character control version 1
+    // useFrame((state, delta) => {
+
+    //     const t = 1.0 - Math.pow(0.001, delta);
+    //     const runVelocity = 5;
+    //     const walkVelocity = 2;
+    //     let velocity;
+
+    //     const rotateVector = new Vector3(0,1,0);
+    //     rotateVector.normalize();
+
+    //     const position = new Vector3();
+    //     position.setFromMatrixPosition(characterBody.current.matrixWorld);
+
+    //     let angleYCameraDirection = Math.atan2(
+    //         (state.camera.position.x - scene.position.x), 
+    //         (state.camera.position.z - scene.position.z))
+
+    //     const quaternion = new Quaternion(0,0,0,0);
+    //     quaternion.setFromAxisAngle(rotateVector, angleYCameraDirection + anglex);        
+
+    //     const wDir = new Vector3(0,0,-1); // Set direction base on current position of character (object)
+    //     wDir.applyQuaternion(quaternion);
+    //     wDir.normalize();
+
+    //     switch (index) {
+    //         case 3:
+    //             velocity = walkVelocity;
+    //             break;
+    //         case 1:
+    //             velocity = runVelocity
+    //             break;        
+    //         default:
+    //             velocity = 0;
+    //             break;
+    //     }
+        
+    //     // Update the camera's target for the next frame
+    //     scene.quaternion.slerp(quaternion, t);
+
+    //     let dirMoveX = wDir.x * velocity * delta;
+    //     let dirMoveZ = wDir.z * velocity * delta;
+
+    //     scene.position.x += dirMoveX;
+    //     scene.position.z += dirMoveZ;
+    // });
+
+
+    // ### 3rd Camera version 1
     // useFrame((state, delta) => {
     //     if(!props.thirdPersonControl) return;
 
@@ -141,7 +197,7 @@ export function Character(props){
     //     wDir.applyQuaternion(quaternion);
     //     wDir.normalize();
         
-    //     const cameraOffset = wDir.multiplyScalar(8).add(new Vector3(0, 9, 6));
+    //     const cameraOffset = wDir.multiplyScalar(8).add(new Vector3(0, 3, -2));
     //     const cameraPosition = state.camera.position.lerp(
     //       position.clone().add(cameraOffset), 
     //       t
