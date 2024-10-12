@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react"
 import { useGLTF, useAnimations } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber";
 import { Quaternion, Vector3 } from "three";
-import { useBox } from "@react-three/cannon";
+// import { useBox } from "@react-three/cannon";
 
 const CharacterState = Object.freeze({
     Idle: 0,
@@ -15,15 +15,15 @@ export function Character(props){
     const width = 3;
     const height = 6;
 
-    const [characterBody, characterApi] = useBox(
-        () => ({
-          allowSleep: false,
-          args: [width, height, 5],
-          mass: 0,
-          position,
-        }),
-        useRef(null),
-      );
+    // const [characterBody, characterApi] = useBox(
+    //     () => ({
+    //       allowSleep: false,
+    //       args: [width, height, 5],
+    //       mass: 0,
+    //       position,
+    //     }),
+    //     useRef(null),
+    //   );
 
     const { nodes, materials, animations, scene } = useGLTF("/models/Soldier.glb");
     // console.log(animations.length)
@@ -80,7 +80,7 @@ export function Character(props){
     }, []);
 // ### 3rd Camera version 2
     useFrame((state, delta) => {
-        if(!props.thirdPersonControl) return;
+        // if(!props.thirdPersonControl) return;
         const t = 1.0 - Math.pow(0.001, delta);
         let velocity = 0;
         const walkVelocity = 2;
@@ -106,7 +106,8 @@ export function Character(props){
         
         const rotateQuarternion = new Quaternion(0,0,0,0);
         rotateQuarternion.setFromAxisAngle(rotateAngle, angleYCameraDirection + anglex);
-        scene.quaternion.rotateTowards(rotateQuarternion, 0.2);
+        // scene.quaternion.rotateTowards(rotateQuarternion, 0.2);
+        scene.quaternion.slerp(rotateQuarternion, t);
 
         const wDir = new Vector3(); // Set direction base on current position of character (object)
         state.camera.getWorldDirection(wDir);
@@ -238,14 +239,9 @@ export function Character(props){
     }, [controls]);
 
     return (
-        <group ref={characterBody} castShadow receiveShadow>
-            <group ref={ref}>
-                <primitive object={scene} />
-            </group>
-            {/* <mesh ref={ref} >
-                <meshLambertMaterial color={'red'}/>
-                <boxGeometry args={[width, height, 3]} />
-            </mesh>  */}
+    
+        <group ref={ref} castShadow receiveShadow>
+            <primitive object={scene} />
         </group>
 
     )
